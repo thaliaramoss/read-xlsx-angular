@@ -11,7 +11,7 @@ import * as XLSX from 'xlsx'
 export class AppComponent {
   title = 'angular_xlsx';
 
-  displayedColumns: string[] = []
+  displayedColumns: string[] = ['col1', 'col2', 'col3', 'col4'];
   dataSource = new MatTableDataSource<any>([])
   data: any
 
@@ -27,13 +27,28 @@ export class AppComponent {
       let sheet = workbook.Sheets[sheetNames[0]]
       let jsonData = XLSX.utils.sheet_to_json(sheet)
 
-      this.dataSource.data = jsonData
+      const columnMappings: { [key: string]: string } = {
+        'coluna 1': 'col1',
+        'coluna 2': 'col2',
+        'coluna 3': 'col3',
+        'coluna 4': 'col4'
+      };
 
-      // primeira linha - coluna com os nomes das colunas
-      this.displayedColumns = Object.keys(jsonData[0] as string[]);
+      let transformedData = jsonData.map((row: any) => {
+        let transformedRow: { [key: string]: any } = {};
+        if (typeof row === 'object' && row !== null) {
+          Object.keys(row).forEach(key => {
+            let newKey = columnMappings[key] || key;
+            transformedRow[newKey] = row[key];
+          });
+        }
+        return transformedRow;
+      });
 
+      this.dataSource.data = transformedData;
 
       console.log(this.dataSource.data)
     }
   }
 }
+
